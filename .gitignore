@@ -1,0 +1,11 @@
+# Ignore all installed packages (can be recreated with npm install)
+node_modules/
+
+# Ignore environment variables file (contains passwords and secrets)
+.env
+
+# Ignore build output if any
+dist/
+/src/generated/prisma
+
+/src/generated/prisma
