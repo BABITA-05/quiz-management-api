@@ -1,48 +1,55 @@
 import prisma from "../prisma.js";
 
-export const startQuiz = async ({
+export const startQuiz = async (
+  playerId,
   subject,
   difficulty,
-  numberOfQuestions,
-}) => {
+  numberOfQuestions
+) => {
+  const player = await prisma.player.findUnique({
+    where: {
+      id: Number(playerId),
+    },
+  });
+
+  if (!player) {
+    throw new Error("Player not found");
+  }
+
   const where = {};
 
   if (subject && subject.toLowerCase() !== "random") {
-    where.subject = {
-      equals: subject,
-      mode: "insensitive",
-    };
+    where.subject = subject;
   }
 
   if (difficulty) {
-    where.difficulty = {
-      equals: difficulty,
-      mode: "insensitive",
-    };
+    where.difficulty = difficulty;
   }
 
   const questions = await prisma.question.findMany({
     where,
   });
 
-  const shuffled = questions.sort(() => Math.random() - 0.5);
+  const shuffledQuestions = questions.sort(() => Math.random() - 0.5);
 
-  const selectedQuestions = shuffled.slice(
+  const selectedQuestions = shuffledQuestions.slice(
     0,
     Number(numberOfQuestions)
   );
 
-  return selectedQuestions.map((question) => {
-    const {
-      correctAnswer,
-      ...questionWithoutAnswer
-    } = question;
-
-    return questionWithoutAnswer;
-  });
+  return selectedQuestions.map((question) => ({
+    id: question.id,
+    subject: question.subject,
+    difficulty: question.difficulty,
+    question: question.question,
+    optionA: question.optionA,
+    optionB: question.optionB,
+    optionC: question.optionC,
+    optionD: question.optionD,
+  }));
 };
 
-export const submitQuiz = async (answers) => {
+export const submitQuiz = async (playerId, answers) => {
   const questionIds = answers.map((answer) => Number(answer.questionId));
 
   const questions = await prisma.question.findMany({
@@ -87,6 +94,7 @@ export const submitQuiz = async (answers) => {
 
   const result = await prisma.quizResult.create({
     data: {
+      playerId: Number(playerId),
       totalQuestions,
       attemptedQuestions,
       correctAnswers,
@@ -99,8 +107,11 @@ export const submitQuiz = async (answers) => {
   return result;
 };
 
-export const getLatestQuizResult = async () => {
+export const getLatestQuizResult = async (playerId) => {
   return await prisma.quizResult.findFirst({
+    where: {
+      playerId: Number(playerId),
+    },
     orderBy: {
       createdAt: "desc",
     },

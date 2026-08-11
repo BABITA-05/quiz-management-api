@@ -5,36 +5,33 @@ import { startQuiz,
 
 export const startQuizController = async (req, res) => {
   try {
-    const { subject, difficulty, numberOfQuestions } = req.body;
-
-    if (!numberOfQuestions || numberOfQuestions <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "numberOfQuestions must be greater than 0",
-      });
-    }
-
-    const questions = await startQuiz({
+    const {
+      playerId,
       subject,
       difficulty,
       numberOfQuestions,
-    });
+    } = req.body;
 
-    if (questions.length === 0) {
-      return res.status(404).json({
+    if (!playerId) {
+      return res.status(400).json({
         success: false,
-        message: "No questions found",
+        message: "Player ID is required",
       });
     }
 
+    const questions = await startQuiz(
+      playerId,
+      subject,
+      difficulty,
+      numberOfQuestions
+    );
+
     res.status(200).json({
       success: true,
-      totalQuestions: questions.length,
+      count: questions.length,
       data: questions,
     });
   } catch (error) {
-    console.error(error);
-
     res.status(500).json({
       success: false,
       message: error.message,
@@ -44,16 +41,16 @@ export const startQuizController = async (req, res) => {
 
 export const submitQuizController = async (req, res) => {
   try {
-    const { answers } = req.body;
+   const { playerId, answers } = req.body;
 
-    if (!answers || !Array.isArray(answers)) {
-      return res.status(400).json({
-        success: false,
-        message: "answers must be an array",
-      });
-    }
+if (!playerId) {
+  return res.status(400).json({
+    success: false,
+    message: "Player ID is required",
+  });
+}
 
-    const result = await submitQuiz(answers);
+const result = await submitQuiz(playerId, answers);
 
     res.status(200).json({
       success: true,
@@ -72,7 +69,7 @@ export const submitQuizController = async (req, res) => {
 
 export const getQuizResultController = async (req, res) => {
   try {
-    const result = await getLatestQuizResult();
+    const result = await getLatestQuizResult(req.params.playerId);
 
     if (!result) {
       return res.status(404).json({

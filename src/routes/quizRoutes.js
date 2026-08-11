@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.post("/start", startQuizController);
 router.post("/submit", submitQuizController);
-router.get("/result", getQuizResultController);
+router.get("/result/:playerId", getQuizResultController);
 
 export default router;

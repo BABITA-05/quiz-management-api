@@ -3,6 +3,7 @@ import express from 'express'
 
 import questionRoutes from "./routes/questionRoutes.js"; 
 import quizRoutes from "./routes/quizRoutes.js";
+import playerRoutes from "./routes/playerRoutes.js";
  
 
 const app = express()
@@ -11,6 +12,7 @@ const app = express()
 app.use(express.json());
 app.use("/questions", questionRoutes);
 app.use("/quiz", quizRoutes);
+app.use("/players", playerRoutes);
 
 app.get("/", (req, res) => {
   res.json({
