@@ -41,16 +41,11 @@ export const startQuizController = async (req, res) => {
 
 export const submitQuizController = async (req, res) => {
   try {
-   const { playerId, answers } = req.body;
+    const { answers } = req.body;
 
-if (!playerId) {
-  return res.status(400).json({
-    success: false,
-    message: "Player ID is required",
-  });
-}
+    const playerId = req.user.id;
 
-const result = await submitQuiz(playerId, answers);
+    const result = await submitQuiz(playerId, answers);
 
     res.status(200).json({
       success: true,
@@ -58,15 +53,12 @@ const result = await submitQuiz(playerId, answers);
       data: result,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
   }
 };
-
 export const getQuizResultController = async (req, res) => {
   try {
     const result = await getLatestQuizResult(req.params.playerId);

@@ -4,11 +4,20 @@ import { startQuizController,
     getQuizResultController,
 
  } from "../controllers/quizController.js";
+ import {
+  authenticate,
+  playerOnly
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/start", startQuizController);
-router.post("/submit", submitQuizController);
+router.post(
+  "/submit",
+  authenticate,
+  playerOnly,
+  submitQuizController
+);
 router.get("/result/:playerId", getQuizResultController);
 
 export default router;
